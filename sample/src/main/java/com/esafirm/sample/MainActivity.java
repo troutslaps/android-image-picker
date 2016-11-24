@@ -109,16 +109,14 @@ public class MainActivity extends AppCompatActivity {
         boolean returnAfterCapture = ((Switch) findViewById(R.id.switch_return_after_capture)).isChecked();
 
         ImagePicker.create(this)
-                .returnAfterCapture(returnAfterCapture) // set whether camera action should return immediate result or not
-                .folderMode(true) // set folder mode (false by default)
+                .returnAfterCapture(true) // set whether camera action should return immediate
+
+                .returnAfterPicking(false)
                 .folderTitle("Folder") // folder selection title
                 .imageTitle("Tap to select") // image selection title
                 .single() // single mode
-                .multi() // multi mode (default mode)
-                .limit(10) // max images can be selected (99 by default)
                 .showCamera(true) // show camera or not (true by default)
                 .imageDirectory("Camera")   // captured image directory name ("Camera" folder by default)
-                .origin(images) // original selected images, used in multi mode
                 .start(RC_CODE_PICKER); // start image picker activity with request code
     }
 

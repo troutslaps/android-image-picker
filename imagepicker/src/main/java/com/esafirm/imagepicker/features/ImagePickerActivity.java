@@ -46,10 +46,12 @@ import java.util.List;
 
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_SELECTED_IMAGES;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
-import static com.esafirm.imagepicker.helper.ImagePickerPreferences.PREF_WRITE_EXTERNAL_STORAGE_REQUESTED;
+import static com.esafirm.imagepicker.features.ImagePicker.MODE_SINGLE;
+import static com.esafirm.imagepicker.helper.ImagePickerPreferences
+        .PREF_WRITE_EXTERNAL_STORAGE_REQUESTED;
 
-public class ImagePickerActivity extends AppCompatActivity
-        implements ImagePickerView, OnImageClickListener {
+public class ImagePickerActivity extends AppCompatActivity implements ImagePickerView,
+        OnImageClickListener {
 
     private static final int RC_CAPTURE = 2000;
 
@@ -113,7 +115,8 @@ public class ImagePickerActivity extends AppCompatActivity
         actionBar = getSupportActionBar();
 
         if (actionBar != null) {
-            actionBar.setTitle(config.isFolderMode() ? config.getFolderTitle() : config.getImageTitle());
+            actionBar.setTitle(config.isFolderMode() ? config.getFolderTitle() : config
+                    .getImageTitle());
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back);
             actionBar.setDisplayShowTitleEnabled(true);
@@ -205,7 +208,8 @@ public class ImagePickerActivity extends AppCompatActivity
 
         MenuItem menuDone = menu.findItem(R.id.menu_done);
         if (menuDone != null) {
-            menuDone.setVisible(!isDisplayingFolderView() && !imageAdapter.getSelectedImages().isEmpty());
+            menuDone.setVisible(!isReturnAfterPicking() && !isDisplayingFolderView() &&
+                    !imageAdapter.getSelectedImages().isEmpty());
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -222,8 +226,7 @@ public class ImagePickerActivity extends AppCompatActivity
             return true;
         }
         if (id == R.id.menu_done) {
-            List<Image> selectedImages = imageAdapter.getSelectedImages();
-            presenter.onDoneSelectImages(selectedImages);
+            finishSelection();
             return true;
         }
         if (id == R.id.menu_camera) {
@@ -231,6 +234,11 @@ public class ImagePickerActivity extends AppCompatActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void finishSelection() {
+        List<Image> selectedImages = imageAdapter.getSelectedImages();
+        presenter.onDoneSelectImages(selectedImages);
     }
 
     /**
@@ -261,9 +269,9 @@ public class ImagePickerActivity extends AppCompatActivity
      */
     private void setItemDecoration(int columns) {
         layoutManager.setSpanCount(columns);
-        if (itemOffsetDecoration != null)
-            recyclerView.removeItemDecoration(itemOffsetDecoration);
-        itemOffsetDecoration = new GridSpacingItemDecoration(columns, getResources().getDimensionPixelSize(R.dimen.item_padding), false);
+        if (itemOffsetDecoration != null) recyclerView.removeItemDecoration(itemOffsetDecoration);
+        itemOffsetDecoration = new GridSpacingItemDecoration(columns, getResources()
+                .getDimensionPixelSize(R.dimen.item_padding), false);
         recyclerView.addItemDecoration(itemOffsetDecoration);
     }
 
@@ -272,7 +280,8 @@ public class ImagePickerActivity extends AppCompatActivity
      * Check permission
      */
     private void getDataWithPermission() {
-        int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission
+                .WRITE_EXTERNAL_STORAGE);
         if (rc == PackageManager.PERMISSION_GRANTED) {
             getData();
         } else {
@@ -288,23 +297,27 @@ public class ImagePickerActivity extends AppCompatActivity
     /**
      * Request for permission
      * If permission denied or app is first launched, request for permission
-     * If permission denied and user choose 'Nerver Ask Again', show snackbar with an action that navigate to app settings
+     * If permission denied and user choose 'Nerver Ask Again', show snackbar with an action that
+     * navigate to app settings
      */
     private void requestWriteExternalPermission() {
         Log.w(TAG, "Write External permission is not granted. Requesting permission");
 
         final String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            ActivityCompat.requestPermissions(this, permissions, RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission
+                .WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(this, permissions,
+                    RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
         } else {
             final String permission = PREF_WRITE_EXTERNAL_STORAGE_REQUESTED;
             if (!preferences.isPermissionRequested(permission)) {
                 preferences.setPermissionRequested(permission);
-                ActivityCompat.requestPermissions(this, permissions, RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                ActivityCompat.requestPermissions(this, permissions,
+                        RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
             } else {
-                Snackbar snackbar = Snackbar.make(mainLayout, R.string.msg_no_write_external_permission,
-                        Snackbar.LENGTH_INDEFINITE);
+                Snackbar snackbar = Snackbar.make(mainLayout, R.string
+                        .msg_no_write_external_permission, Snackbar.LENGTH_INDEFINITE);
                 snackbar.setAction(R.string.ok, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -348,28 +361,33 @@ public class ImagePickerActivity extends AppCompatActivity
      * Handle permission results
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
 
         switch (requestCode) {
             case RC_PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE: {
-                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length != 0 && grantResults[0] == PackageManager
+                        .PERMISSION_GRANTED) {
                     Log.d(TAG, "Write External permission granted");
                     getData();
                     return;
                 }
                 Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
-                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)" +
+                        ""));
                 finish();
             }
             break;
             case RC_PERMISSION_REQUEST_CAMERA: {
-                if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length != 0 && grantResults[0] == PackageManager
+                        .PERMISSION_GRANTED) {
                     Log.d(TAG, "Camera permission granted");
                     captureImage();
                     return;
                 }
                 Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
-                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+                        " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)" +
+                        ""));
                 break;
             }
             default: {
@@ -384,8 +402,8 @@ public class ImagePickerActivity extends AppCompatActivity
      * Open app settings screen
      */
     private void openAppSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.fromParts("package", getPackageName(), null));
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts
+                ("package", getPackageName(), null));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
@@ -393,6 +411,9 @@ public class ImagePickerActivity extends AppCompatActivity
     @Override
     public void onClick(View view, int position) {
         clickImage(position);
+        if (isReturnAfterPicking()) {
+            finishSelection();
+        }
     }
 
     /**
@@ -488,7 +509,8 @@ public class ImagePickerActivity extends AppCompatActivity
                 getData();
             }
         };
-        getContentResolver().registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false, observer);
+        getContentResolver().registerContentObserver(MediaStore.Images.Media
+                .EXTERNAL_CONTENT_URI, false, observer);
     }
 
     /**
@@ -508,9 +530,9 @@ public class ImagePickerActivity extends AppCompatActivity
             actionBar.setTitle(config.getImageTitle());
         } else if (config.getMode() == ImagePicker.MODE_MULTIPLE) {
             int imageSize = imageAdapter.getSelectedImages().size();
-            actionBar.setTitle(config.getLimit() == ImagePicker.MAX_LIMIT
-                    ? String.format(getString(R.string.selected), imageSize)
-                    : String.format(getString(R.string.selected_with_limit), imageSize, config.getLimit()));
+            actionBar.setTitle(config.getLimit() == ImagePicker.MAX_LIMIT ? String.format
+                    (getString(R.string.selected), imageSize) : String.format(getString(R.string
+                    .selected_with_limit), imageSize, config.getLimit()));
         }
     }
 
@@ -537,8 +559,8 @@ public class ImagePickerActivity extends AppCompatActivity
      * Check if displaying folders view
      */
     private boolean isDisplayingFolderView() {
-        return (config.isFolderMode() &&
-                (recyclerView.getAdapter() == null || recyclerView.getAdapter() instanceof FolderPickerAdapter));
+        return (config.isFolderMode() && (recyclerView.getAdapter() == null || recyclerView
+                .getAdapter() instanceof FolderPickerAdapter));
     }
 
     /**
@@ -561,8 +583,8 @@ public class ImagePickerActivity extends AppCompatActivity
     @Override
     public void finishPickImages(List<Image> images) {
         Intent data = new Intent();
-        data.putParcelableArrayListExtra(EXTRA_SELECTED_IMAGES,
-                (ArrayList<? extends Parcelable>) images);
+        data.putParcelableArrayListExtra(EXTRA_SELECTED_IMAGES, (ArrayList<? extends Parcelable>)
+                images);
         setResult(RESULT_OK, data);
         finish();
     }
@@ -604,4 +626,7 @@ public class ImagePickerActivity extends AppCompatActivity
         emptyTextView.setVisibility(View.VISIBLE);
     }
 
+    public boolean isReturnAfterPicking() {
+        return config.isReturnAfterPicking() && config.getMode() == MODE_SINGLE;
+    }
 }

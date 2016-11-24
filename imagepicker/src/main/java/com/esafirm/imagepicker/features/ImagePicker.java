@@ -131,6 +131,11 @@ public abstract class ImagePicker {
         config.setImageDirectory(directory);
         return this;
     }
+    public ImagePicker returnAfterPicking(boolean returnAfterPicking)
+    {
+        config.setReturnAfterPicking(returnAfterPicking);
+        return this;
+    }
 
     public Intent getIntent(Context context) {
         Intent intent = new Intent(context, ImagePickerActivity.class);

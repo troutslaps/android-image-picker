@@ -5,5 +5,4 @@
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
-    app:contentInsetStart="0dp"
-    app:theme="@style/ToolbarStyle"/>
+    app:contentInsetStart="0dp"/>

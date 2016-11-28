@@ -118,7 +118,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
             actionBar.setTitle(config.isFolderMode() ? config.getFolderTitle() : config
                     .getImageTitle());
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back);
+
             actionBar.setDisplayShowTitleEnabled(true);
         }
     }

@@ -47,6 +47,7 @@ import java.util.List;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_SELECTED_IMAGES;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_SINGLE;
+import static com.esafirm.imagepicker.features.ImagePicker.NO_PAGINATION;
 import static com.esafirm.imagepicker.helper.ImagePickerPreferences
         .PREF_WRITE_EXTERNAL_STORAGE_REQUESTED;
 
@@ -102,6 +103,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         setupView();
 
         orientationBasedUI(getResources().getConfiguration().orientation);
+
     }
 
     private void setupView() {
@@ -120,6 +122,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
         }
+
     }
 
     private void setupExtras() {
@@ -145,7 +148,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
             @Override
             public void onFolderClick(Folder bucket) {
                 foldersState = recyclerView.getLayoutManager().onSaveInstanceState();
-                setImageAdapter(bucket.getImages());
+                setImageAdapter(bucket.getImages(), NO_PAGINATION);
             }
         });
     }
@@ -162,10 +165,17 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
      * 2. Update item decoration
      * 3. Update title
      */
-    private void setImageAdapter(List<Image> images) {
-        imageAdapter.setData(images);
-        setItemDecoration(imageColumns);
-        recyclerView.setAdapter(imageAdapter);
+    private void setImageAdapter(List<Image> images, int offset) {
+
+        if(config.getPageSize()==  NO_PAGINATION) {
+            imageAdapter.setData(images);
+        }
+        else
+        {
+            imageAdapter.addAll(images);
+            
+        }
+
         updateTitle();
     }
 
@@ -261,6 +271,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
         setItemDecoration(columns);
+        recyclerView.setAdapter(imageAdapter);
     }
 
     /**
@@ -290,7 +301,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
 
     private void getData() {
         presenter.abortLoad();
-        presenter.loadImages(config.isFolderMode());
+        presenter.loadImages(config.isFolderMode(), config.getPageSize());
     }
 
     /**
@@ -598,8 +609,13 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         if (config.isFolderMode()) {
             setFolderAdapter(folders);
         } else {
-            setImageAdapter(images);
+            setImageAdapter(images, NO_PAGINATION);
         }
+    }
+
+    @Override
+    public void showPageFetchCompleted(List<Image> images, List<Folder> folders, int offset) {
+        setImageAdapter(images, offset);
     }
 
     @Override

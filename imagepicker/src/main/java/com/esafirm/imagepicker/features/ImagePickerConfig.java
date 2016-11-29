@@ -24,6 +24,7 @@ public class ImagePickerConfig implements Parcelable {
     private boolean showCamera;
     private boolean returnAfterCapture;
     private boolean returnAfterPicking;
+    private int pageSize;
 
     public ImagePickerConfig(Context context) {
         this.mode = ImagePicker.MODE_MULTIPLE;
@@ -36,6 +37,7 @@ public class ImagePickerConfig implements Parcelable {
         this.imageDirectory = context.getString(R.string.image_directory);
         this.returnAfterCapture = true;
         this.returnAfterPicking = false;
+        this.pageSize = ImagePicker.NO_PAGINATION;
     }
 
     public boolean isReturnAfterPicking() {
@@ -102,6 +104,14 @@ public class ImagePickerConfig implements Parcelable {
         this.selectedImages = selectedImages;
     }
 
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
     public boolean isFolderMode() {
         return folderMode;
     }
@@ -139,6 +149,7 @@ public class ImagePickerConfig implements Parcelable {
         dest.writeByte(this.showCamera ? (byte) 1 : (byte) 0);
         dest.writeByte(this.returnAfterCapture ? (byte) 1 : (byte) 0);
         dest.writeByte(this.returnAfterPicking ? (byte) 1 : (byte) 0);
+        dest.writeInt(this.pageSize);
     }
 
     protected ImagePickerConfig(Parcel in) {
@@ -152,6 +163,7 @@ public class ImagePickerConfig implements Parcelable {
         this.showCamera = in.readByte() != 0;
         this.returnAfterCapture = in.readByte() != 0;
         this.returnAfterPicking = in.readByte() != 0;
+        this.pageSize = in.readInt();
     }
 
     public static final Creator<ImagePickerConfig> CREATOR = new Creator<ImagePickerConfig>() {
@@ -165,4 +177,6 @@ public class ImagePickerConfig implements Parcelable {
             return new ImagePickerConfig[size];
         }
     };
+
+
 }

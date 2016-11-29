@@ -48,6 +48,14 @@ public class MainActivity extends AppCompatActivity {
                 start();
             }
         });
+        findViewById(R.id.button_pick_image_pagination).setOnClickListener(new View.OnClickListener() {
+
+
+            @Override
+            public void onClick(View view) {
+                startWithPagination();
+            }
+        });
 
         findViewById(R.id.button_pick_image_rx).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -109,8 +119,7 @@ public class MainActivity extends AppCompatActivity {
         boolean returnAfterCapture = ((Switch) findViewById(R.id.switch_return_after_capture)).isChecked();
 
         ImagePicker.create(this)
-                .returnAfterCapture(true) // set whether camera action should return immediate
-
+                .returnAfterCapture(returnAfterCapture) // set whether camera action should return immediate
                 .returnAfterPicking(false)
                 .folderTitle("Folder") // folder selection title
                 .imageTitle("Tap to select") // image selection title
@@ -120,6 +129,20 @@ public class MainActivity extends AppCompatActivity {
                 .start(RC_CODE_PICKER); // start image picker activity with request code
     }
 
+
+    private void startWithPagination() {
+        boolean returnAfterCapture = ((Switch) findViewById(R.id.switch_return_after_capture)).isChecked();
+        ImagePicker.create(this)
+                .returnAfterCapture(returnAfterCapture) // set whether camera action should return immediate
+                .returnAfterPicking(false)
+                .folderTitle("Folder") // folder selection title
+                .imageTitle("Tap to select") // image selection title
+                .single() // single mode
+                .showCamera(true) // show camera or not (true by default)
+                .imageDirectory("Camera")   // captured image directory name ("Camera" folder by default)
+                .pageSize(33) // enable pagination
+                .start(RC_CODE_PICKER); // start image picker activity with request code
+    }
     // Traditional intent
     public void startWithIntent() {
         Intent intent = new Intent(this, ImagePickerActivity.class);

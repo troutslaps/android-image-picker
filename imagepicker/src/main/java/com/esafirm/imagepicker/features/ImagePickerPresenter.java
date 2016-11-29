@@ -33,11 +33,42 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         imageLoader.abortLoadImages();
     }
 
-    public void loadImages(boolean isFolderMode) {
+    public void loadImages(boolean isFolderMode, int pageSize) {
         if (!isViewAttached()) return;
 
         getView().showLoading(true);
-        imageLoader.loadDeviceImages(isFolderMode, new ImageLoaderListener() {
+        imageLoader.loadDeviceImages(isFolderMode, pageSize, new ImageLoaderListener() {
+            @Override
+            public void onImagePageLoaded(final List<Image> images, final List<Folder> folders, int
+                    currentPage, int totalNumberOfPages, final int offset) {
+                // do nothing if pagination is disabled
+                System.out.println("images.size() = " + images.size() + ", currentPage = " +
+                        currentPage + ", totalNumberOfPages = " + totalNumberOfPages);
+
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isViewAttached()) {
+                            getView().showPageFetchCompleted(images, folders, offset);
+
+                            if (folders != null) {
+                                if (folders.isEmpty()) {
+                                    getView().showEmpty();
+                                } else {
+                                    getView().showLoading(false);
+                                }
+                            } else {
+                                if (images.isEmpty()) {
+                                    getView().showEmpty();
+                                } else {
+                                    getView().showLoading(false);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
             @Override
             public void onImageLoaded(final List<Image> images, final List<Folder> folders) {
                 handler.post(new Runnable() {
@@ -102,6 +133,10 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
             return;
         }
         activity.startActivityForResult(intent, requestCode);
+        if(config.isReturnAfterPicking())
+        {
+            activity.finish();
+        }
     }
 
     public void finishCaptureImage(Context context, Intent data, final ImagePickerConfig config) {

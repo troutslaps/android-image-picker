@@ -20,11 +20,14 @@ public abstract class ImagePicker {
     public static final String EXTRA_FOLDER_TITLE = "folderTitle";
     public static final String EXTRA_IMAGE_TITLE = "imageTitle";
     public static final String EXTRA_IMAGE_DIRECTORY = "imageDirectory";
+    public static final String EXTRA_PAGE_SIZE = "pageSize";
 
     public static final int MAX_LIMIT = 99;
 
     public static final int MODE_SINGLE = 1;
     public static final int MODE_MULTIPLE = 2;
+
+    public static final int NO_PAGINATION = 0;
 
     private ImagePickerConfig config;
 
@@ -137,6 +140,10 @@ public abstract class ImagePicker {
         return this;
     }
 
+    public ImagePicker pageSize(int pageSize) {
+        config.setPageSize(pageSize);
+        return this;
+    }
     public Intent getIntent(Context context) {
         Intent intent = new Intent(context, ImagePickerActivity.class);
         intent.putExtra(ImagePickerConfig.class.getSimpleName(), config);

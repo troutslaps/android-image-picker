@@ -142,9 +142,7 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
             return;
         }
         activity.startActivityForResult(intent, requestCode);
-        if (config.isReturnAfterPicking()) {
-            activity.finish();
-        }
+
     }
 
     public void finishCaptureImage(Context context, Intent data, final ImagePickerConfig config) {

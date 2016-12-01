@@ -26,7 +26,3 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.0.0'
     compile 'com.android.support:design:25.0.0'
 }
-
-apply plugin: 'com.github.dcendents.android-maven'
-
-group='com.github.troutslaps'

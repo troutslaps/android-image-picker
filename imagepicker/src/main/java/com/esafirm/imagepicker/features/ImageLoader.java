@@ -165,7 +165,7 @@ public class ImageLoader {
                 countCursor.close();
             }
 
-            int numOfPages = (int) Math.ceil(count / pageSize);
+            int numOfPages = (int) Math.ceil((double)count / pageSize);
 
             for (int page = 0; page < numOfPages; page++) {
                 if(folder != null && !folder.equals(currentFolder))

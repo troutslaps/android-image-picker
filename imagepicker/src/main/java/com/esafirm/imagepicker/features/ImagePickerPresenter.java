@@ -12,6 +12,7 @@ import com.esafirm.imagepicker.features.camera.CameraModule;
 import com.esafirm.imagepicker.features.camera.DefaultCameraModule;
 import com.esafirm.imagepicker.features.camera.OnImageReadyListener;
 import com.esafirm.imagepicker.features.common.BasePresenter;
+import com.esafirm.imagepicker.features.common.FolderLoaderListener;
 import com.esafirm.imagepicker.features.common.ImageLoaderListener;
 import com.esafirm.imagepicker.model.Folder;
 import com.esafirm.imagepicker.model.Image;
@@ -33,67 +34,38 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         imageLoader.abortLoadImages();
     }
 
-    public void loadImages(boolean isFolderMode, int pageSize) {
+    public void loadAllImages(int pageSize) {
         if (!isViewAttached()) return;
 
         getView().showLoading(true);
-        imageLoader.loadDeviceImages(isFolderMode, pageSize, new ImageLoaderListener() {
-            @Override
-            public void onImagePageLoaded(final List<Image> images, final List<Folder> folders, int
-                    currentPage, int totalNumberOfPages, final int offset) {
-                // do nothing if pagination is disabled
-                System.out.println("images.size() = " + images.size() + ", currentPage = " +
-                        currentPage + ", totalNumberOfPages = " + totalNumberOfPages);
+        this.loadImagesForFolder(null, pageSize);
+    }
 
+    public void loadAllDeviceFolders(int pageSize) {
+        if (!isViewAttached()) return;
+
+        getView().showLoading(true);
+        imageLoader.loadDeviceFolders(pageSize, new FolderLoaderListener() {
+            @Override
+            public void onFoldersLoaded(final List<Folder> folders, int currentPage, int
+                    totalNumberOfPages, final int offset) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         if (isViewAttached()) {
-                            getView().showPageFetchCompleted(images, folders, offset);
+                            getView().showPageFetchCompleted(null, folders, offset);
 
-                            if (folders != null) {
-                                if (folders.isEmpty()) {
-                                    getView().showEmpty();
-                                } else {
-                                    getView().showLoading(false);
-                                }
+                            if (folders.isEmpty()) {
+                                getView().showEmpty();
                             } else {
-                                if (images.isEmpty()) {
-                                    getView().showEmpty();
-                                } else {
-                                    getView().showLoading(false);
-                                }
+                                getView().showLoading(false);
                             }
+
                         }
                     }
                 });
             }
 
-            @Override
-            public void onImageLoaded(final List<Image> images, final List<Folder> folders) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (isViewAttached()) {
-                            getView().showFetchCompleted(images, folders);
-
-                            if (folders != null) {
-                                if (folders.isEmpty()) {
-                                    getView().showEmpty();
-                                } else {
-                                    getView().showLoading(false);
-                                }
-                            } else {
-                                if (images.isEmpty()) {
-                                    getView().showEmpty();
-                                } else {
-                                    getView().showLoading(false);
-                                }
-                            }
-                        }
-                    }
-                });
-            }
 
             @Override
             public void onFailed(final Throwable throwable) {
@@ -102,6 +74,42 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
                     public void run() {
                         if (isViewAttached()) {
                             getView().showError(throwable);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    public void loadImagesForFolder(String folder, int pageSize) {
+        if (!isViewAttached()) return;
+
+        getView().showLoading(true);
+        imageLoader.loadDeviceImagesFromFolder(folder, pageSize, new ImageLoaderListener() {
+
+            @Override
+            public void onFailed(final Throwable throwable) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isViewAttached()) {
+                            getView().showError(throwable);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onImagePageForFolderLoaded(final List<Image> images, final String folder,
+                                                   int currentPage, int totalNumberOfPages, final
+                                                   int offset) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isViewAttached()) {
+                            getView().showPageFetchCompleted(images, null, offset);
+                            getView().showLoading(false);
+
                         }
                     }
                 });
@@ -129,12 +137,12 @@ public class ImagePickerPresenter extends BasePresenter<ImagePickerView> {
         Context context = activity.getApplicationContext();
         Intent intent = cameraModule.getCameraIntent(activity, config);
         if (intent == null) {
-            Toast.makeText(context, context.getString(R.string.error_create_image_file), Toast.LENGTH_LONG).show();
+            Toast.makeText(context, context.getString(R.string.error_create_image_file), Toast
+                    .LENGTH_LONG).show();
             return;
         }
         activity.startActivityForResult(intent, requestCode);
-        if(config.isReturnAfterPicking())
-        {
+        if (config.isReturnAfterPicking()) {
             activity.finish();
         }
     }

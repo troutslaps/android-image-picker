@@ -47,7 +47,6 @@ import java.util.List;
 import static com.esafirm.imagepicker.features.ImagePicker.EXTRA_SELECTED_IMAGES;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_MULTIPLE;
 import static com.esafirm.imagepicker.features.ImagePicker.MODE_SINGLE;
-import static com.esafirm.imagepicker.features.ImagePicker.NO_PAGINATION;
 import static com.esafirm.imagepicker.helper.ImagePickerPreferences
         .PREF_WRITE_EXTERNAL_STORAGE_REQUESTED;
 
@@ -81,6 +80,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
 
     private Parcelable foldersState;
 
+    private Folder bucket;
     private int imageColumns;
     private int folderColumns;
 
@@ -103,6 +103,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         setupView();
 
         orientationBasedUI(getResources().getConfiguration().orientation);
+        getDataWithPermission();
 
     }
 
@@ -147,16 +148,33 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         folderAdapter = new FolderPickerAdapter(this, new OnFolderClickListener() {
             @Override
             public void onFolderClick(Folder bucket) {
+                presenter.abortLoad();
+                ImagePickerActivity.this.bucket = bucket;
                 foldersState = recyclerView.getLayoutManager().onSaveInstanceState();
-                setImageAdapter(bucket.getImages(), NO_PAGINATION);
+                setImageAdapter(bucket.getImages());
+                getDataWithPermission();
             }
         });
     }
 
+    private void switchToImageView()
+    {
+
+        setItemDecoration(imageColumns);
+        recyclerView.setAdapter(imageAdapter);
+    }
+
+    private void switchToFolderView()
+    {
+        setItemDecoration(folderColumns);
+        recyclerView.setAdapter(folderAdapter);
+        imageAdapter.resetData();
+    }
+
+
     @Override
     protected void onResume() {
         super.onResume();
-        getDataWithPermission();
     }
 
     /**
@@ -165,17 +183,14 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
      * 2. Update item decoration
      * 3. Update title
      */
-    private void setImageAdapter(List<Image> images, int offset) {
+    private void setImageAdapter(List<Image> images) {
+        if (isDisplayingFolderView()) {
 
-        if(config.getPageSize()==  NO_PAGINATION) {
-            imageAdapter.setData(images);
-        }
-        else
-        {
+            switchToImageView();
+
+        } else {
             imageAdapter.addAll(images);
-            
         }
-
         updateTitle();
     }
 
@@ -270,8 +285,11 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         layoutManager = new GridLayoutManager(this, columns);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
-        setItemDecoration(columns);
-        recyclerView.setAdapter(imageAdapter);
+        if (config.isFolderMode()) {
+            switchToFolderView();
+        } else {
+            switchToImageView();
+        }
     }
 
     /**
@@ -301,7 +319,19 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
 
     private void getData() {
         presenter.abortLoad();
-        presenter.loadImages(config.isFolderMode(), config.getPageSize());
+//        presenter.loadAllImages(config.isFolderMode(), config.getPageSize());
+        if (config.isFolderMode()) {
+            if (isDisplayingFolderView()) {
+                presenter.loadAllDeviceFolders(config.getPageSize());
+            } else {
+                if (bucket != null) {
+                    presenter.loadImagesForFolder(bucket.getFolderName(), config.getPageSize());
+                }
+            }
+        } else {
+            presenter.loadAllImages(config.getPageSize());
+        }
+
     }
 
     /**
@@ -384,7 +414,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
                 }
                 Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
                         " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)" +
-                        ""));
+                        "" + ""));
                 finish();
             }
             break;
@@ -397,7 +427,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
                 }
                 Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
                         " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)" +
-                        ""));
+                        "" + ""));
                 break;
             }
             default: {
@@ -420,6 +450,7 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
 
     @Override
     public void onClick(View view, int position) {
+        presenter.abortLoad();
         clickImage(position);
         if (isReturnAfterPicking()) {
             finishSelection();
@@ -578,8 +609,10 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
      */
     @Override
     public void onBackPressed() {
+        presenter.abortLoad();
         if (config.isFolderMode() && !isDisplayingFolderView()) {
             setFolderAdapter(null);
+            switchToFolderView();
             return;
         }
         setResult(RESULT_CANCELED);
@@ -609,13 +642,17 @@ public class ImagePickerActivity extends AppCompatActivity implements ImagePicke
         if (config.isFolderMode()) {
             setFolderAdapter(folders);
         } else {
-            setImageAdapter(images, NO_PAGINATION);
+            setImageAdapter(images);
         }
     }
 
     @Override
     public void showPageFetchCompleted(List<Image> images, List<Folder> folders, int offset) {
-        setImageAdapter(images, offset);
+        if (isDisplayingFolderView()) {
+            setFolderAdapter(folders);
+        } else {
+            setImageAdapter(images);
+        }
     }
 
     @Override

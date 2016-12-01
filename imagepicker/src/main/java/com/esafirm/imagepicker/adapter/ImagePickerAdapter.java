@@ -115,6 +115,10 @@ public class ImagePickerAdapter extends RecyclerView.Adapter<ImagePickerAdapter.
         return selectedImages;
     }
 
+    public void resetData() {
+        this.images.clear();
+    }
+
     public static class ImageViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView imageView;

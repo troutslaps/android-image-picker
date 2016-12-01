@@ -18,7 +18,8 @@ import java.util.List;
 /**
  * Created by boss1088 on 8/22/16.
  */
-public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapter.FolderViewHolder> {
+public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapter
+        .FolderViewHolder> {
 
     private Context context;
     private LayoutInflater inflater;
@@ -43,11 +44,8 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
 
         final Folder folder = folders.get(position);
 
-        Glide.with(context)
-                .load(folder.getImages().get(0).getPath())
-                .placeholder(R.drawable.folder_placeholder)
-                .error(R.drawable.folder_placeholder)
-                .into(holder.image);
+        Glide.with(context).load(folder.getImages().get(0).getPath()).placeholder(R.drawable
+                .folder_placeholder).error(R.drawable.folder_placeholder).into(holder.image);
 
         holder.name.setText(folders.get(position).getFolderName());
         holder.number.setText(String.valueOf(folders.get(position).getImages().size()));
@@ -55,14 +53,17 @@ public class FolderPickerAdapter extends RecyclerView.Adapter<FolderPickerAdapte
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (folderClickListener != null)
-                    folderClickListener.onFolderClick(folder);
+                if (folderClickListener != null) folderClickListener.onFolderClick(folder);
             }
         });
     }
 
     public void setData(List<Folder> folders) {
-        this.folders = folders;
+        if (this.folders == null) {
+            this.folders = folders;
+        } else {
+            this.folders.addAll(folders);
+        }
 
         notifyDataSetChanged();
     }

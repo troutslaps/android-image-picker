@@ -37,7 +37,7 @@ public class ImagePickerConfig implements Parcelable {
         this.imageDirectory = context.getString(R.string.image_directory);
         this.returnAfterCapture = true;
         this.returnAfterPicking = false;
-        this.pageSize = ImagePicker.NO_PAGINATION;
+        this.pageSize = ImagePicker.MIN_PAGINATION;
     }
 
     public boolean isReturnAfterPicking() {

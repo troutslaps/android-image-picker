@@ -134,13 +134,13 @@ public class MainActivity extends AppCompatActivity {
         boolean returnAfterCapture = ((Switch) findViewById(R.id.switch_return_after_capture)).isChecked();
         ImagePicker.create(this)
                 .returnAfterCapture(returnAfterCapture) // set whether camera action should return immediate
-                .returnAfterPicking(false)
+                .returnAfterPicking(true)
                 .folderTitle("Folder") // folder selection title
+                .folderMode(true)
                 .imageTitle("Tap to select") // image selection title
                 .single() // single mode
                 .showCamera(true) // show camera or not (true by default)
                 .imageDirectory("Camera")   // captured image directory name ("Camera" folder by default)
-                .pageSize(33) // enable pagination
                 .start(RC_CODE_PICKER); // start image picker activity with request code
     }
     // Traditional intent

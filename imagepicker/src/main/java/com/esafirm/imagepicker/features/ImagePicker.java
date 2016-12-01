@@ -23,12 +23,9 @@ public abstract class ImagePicker {
     public static final String EXTRA_PAGE_SIZE = "pageSize";
 
     public static final int MAX_LIMIT = 99;
-
+    public static final int MIN_PAGINATION = 33;
     public static final int MODE_SINGLE = 1;
     public static final int MODE_MULTIPLE = 2;
-
-    public static final int NO_PAGINATION = 0;
-
     private ImagePickerConfig config;
 
     public abstract void start(int requestCode);
